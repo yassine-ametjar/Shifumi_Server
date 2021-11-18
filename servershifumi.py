@@ -10,64 +10,49 @@ async def receive(reader):
     data =  reader.readline()
     data = data.decode()
     return data
-
+    
 async def handle_request(reader,writer):
     msg = "200 : Connexion établie"
     await send(writer,msg)
+
     mode = await reader.readline()
     mode = mode.decode()
     if (mode == "MODE: 0\r\n"):
         msg = "200 : Choix de Partie"
         await send(writer,msg)
+        
         nbround = await reader.readline()
         nbround = nbround.decode()
+        nbround = (int)(nbround[10])
         scoreJoueur = 0
         scoreIA = 0
-        if (int(nbround[10:])>= 0):
-            msg = "200 : Play"
-            await send(writer,msg)
-            msg = str(300 + int(nbround[10:]))+":"+str(scoreJoueur)+"-"+str(scoreIA)
+        msg = "200 : Play"
+        await send(writer,msg)
+        while(nbround > 0):
+            msg = str(300 + nbround)+":"+str(scoreJoueur)+"-"+str(scoreIA)
             await send(writer,msg)
             #La partie commence
             choix = await reader.readline()
             choix = choix.decode()
             choixIA = random.randint(0,2)
-            if (choix == 0):
-                if(choixIA == 0):
-                     print("null")
-                elif(choixIA == 1):
-                    scoreIA +=1
-                else:
-                    scoreJoueur +=1
-            elif (choix == 1):
-                if(choixIA == 0):
-                    scoreJoueur +=1
-                elif(choixIA == 1):
-                    print("null")
-                else:
-                    scoreIA +=1
-            elif (choix == 2):
-                if(choixIA == 0):
-                    scoreIA +=1
-                elif(choixIA == 1):
-                    scoreJoueur +=1
-                else:
-                       print("null")
-            msg = str(300 + int(nbround[10:]))+":"+str(scoreJoueur)+"-"+str(scoreIA)
+            if (int(choix[6]) == 1 and choixIA == 0 or \
+                int(choix[6]) == 2 and choixIA == 1 or \
+                int(choix[6]) == 0 and choixIA == 2 ) :
+                scoreJoueur += 1
+                msg = str(300 + nbround)+":"+str(scoreJoueur)+"-"+str(scoreIA)
+                nbround-=1
+            elif (choixIA == 1 and int(choix[6])== 0 or \
+                choixIA == 2 and int(choix[6]) == 1 or \
+                choixIA == 0 and int(choix[6])== 2 )  :
+                scoreIA+=1
+                msg = str(300 + nbround)+":"+str(scoreJoueur)+"-"+str(scoreIA)
+                nbround-=1
+            else:
+                msg = str(300 + nbround)+":"+str(scoreJoueur)+"-"+str(scoreIA)
+            print("Choix"+choix[6]+"-"+str(choixIA))
+            print("résultat"+str(scoreJoueur)+"-"+str(scoreIA))
             await send(writer,msg)
-        else:
-            msg = "400 : Play" 
-            await send(writer,msg)
-        
-        msg = "301:1-0"
-        await send(writer,msg)
-""" 
-    
-    msg = "301:1-0"
-    await send(writer,msg)
 
-    msg = "300:2-0"
-    await send(writer,msg) """
 
     #writer.close()
 
