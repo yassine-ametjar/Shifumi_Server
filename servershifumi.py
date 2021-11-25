@@ -2,9 +2,7 @@
 # -*- coding: utf-8 -
 
 import asyncio,random
-
 from datetime import datetime
-
 
 tablenameless = {}
 tablename= {}
@@ -16,7 +14,6 @@ def log_envoyer(chevron,msg,writer):
     f.write(chevron+" "+ip+" "+msg+" "+date)
     f.close()
 
-
 async def send(writer, msg):
     writer.write(msg.encode()+ b"\r\n")
     log_envoyer(">>>",msg,writer)
@@ -26,7 +23,6 @@ async def receive(reader,writer):
     msg = msg.decode()
     log_envoyer("<<<",msg.strip(),writer)
     return msg
-
 
 async def IA(writer,reader):
     msg = "200: Choix de Partie"
@@ -148,7 +144,6 @@ async def partie(reader1,writer1,reader2,writer2,nbrounds):
         await send(writer2,msg)
     tablenameless.clear()
 
-
 async def nameless(writer,reader):
     msg = "200: Choix de Partie"
     await send(writer,msg)
@@ -206,7 +201,7 @@ async def createtable(writer,reader):
                     nbrounds = (int)(nbrounds[10:])
             await send(writer,msg)
             tablename[tname] = [reader,writer,nbrounds]
-        break
+            break
 
 async def joinname(writer,reader):
     msg = "200: Choix de Partie"
@@ -231,14 +226,12 @@ async def joinname(writer,reader):
             del tablename[tname]
             await partie(reader1,writer1,reader,writer,nbrounds)
 
-
 async def handle_request(reader,writer):
-
     msg = "200 : Connexion établie"
     await send(writer,msg)  
-
-    mode = await receive(reader,writer)
     
+    mode = await receive(reader,writer)
+
     if (mode == "MODE: 0\r\n"):
         await IA(writer,reader)
     elif (mode == "MODE: 1\r\n"):
@@ -247,9 +240,6 @@ async def handle_request(reader,writer):
         await createtable(writer,reader)
     elif (mode == "MODE: 3\r\n"):
         await joinname(writer,reader)
-
-    
-    
 
 async def run_server():
     server = await asyncio.start_server(handle_request,'',999)
